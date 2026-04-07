@@ -1,0 +1,60 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / IDE
+.vscode/
+.idea/
+
+# Cursor
+.cursor/
+.cursor-cache/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+*.tmp
+
+# PHP
+/vendor/
+
+# Node / frontend tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+public/build/
+public/assets/build/
+
+# Test / coverage
+coverage/
+.phpunit.result.cache
+
+# Cache / runtime
+cache/
+tmp/
+temp/
+*.cache
+
+# Uploaded or generated files
+uploads/
+storage/
+generated/
+
+# Database local files
+*.sqlite
+*.db
+
+# Misc
+*.bak
+*.swp
