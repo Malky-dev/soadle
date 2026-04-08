@@ -2,38 +2,39 @@
 
 declare(strict_types=1);
 
-// Load .env file if present
-$envFile = dirname(__DIR__) . '/.env';
+$path = dirname(__DIR__) . '/.env';
 
-if (!file_exists($envFile)) {
+if (!is_readable($path)) {
     return;
 }
 
-$lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$raw = file($path, FILE_IGNORE_NEW_LINES);
 
-foreach ($lines as $line) {
-    // Ignore comments
-    if (str_starts_with(trim($line), '#')) {
+if ($raw === false) {
+    return;
+}
+
+foreach ($raw as $line) {
+    $line = trim($line);
+
+    if ($line === '' || str_starts_with($line, '#')) {
         continue;
     }
 
-    // Ignore invalid lines
     if (!str_contains($line, '=')) {
         continue;
     }
 
-    [$key, $value] = explode('=', $line, 2);
+    [$name, $value] = explode('=', $line, 2);
+    $name = trim($name);
 
-    $key = trim($key);
-    $value = trim($value);
-
-    // Remove optional quotes
-    $value = trim($value, "\"'");
-
-    // Do not override existing environment variables
-    if (isset($_ENV[$key])) {
+    if ($name === '') {
         continue;
     }
 
-    $_ENV[$key] = $value;
+    $value = trim($value);
+    $value = trim($value, '"\'');
+
+    $_ENV[$name] = $value;
+    putenv($name . '=' . $value);
 }

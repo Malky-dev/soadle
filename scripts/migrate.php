@@ -2,93 +2,20 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../bootstrap/app.php';
-
 use App\Infrastructure\Database\Connection;
 
-$pdo = Connection::make();
+require_once __DIR__ . '/../bootstrap/app.php';
 
-ensureMigrationsTable($pdo);
+$pdo = Connection::get();
 
-$migrationsDirectory = __DIR__ . '/../database/migrations';
-$migrationFiles = glob($migrationsDirectory . '/*.php');
+$sql = file_get_contents(__DIR__ . '/../database/schema.sql');
 
-if ($migrationFiles === false) {
-    fwrite(STDERR, "Unable to read migration files.\n");
+if ($sql === false) {
+    fwrite(STDERR, "Unable to read database/schema.sql.\n");
     exit(1);
 }
 
-sort($migrationFiles);
+// Execute the schema as a single migration entrypoint for local setup.
+$pdo->exec($sql);
 
-$appliedVersions = fetchAppliedVersions($pdo);
-
-foreach ($migrationFiles as $migrationFile) {
-    $version = basename($migrationFile, '.php');
-
-    if (in_array($version, $appliedVersions, true)) {
-        echo "[SKIP] {$version}\n";
-        continue;
-    }
-
-    $migration = require $migrationFile;
-
-    if (!is_callable($migration)) {
-        fwrite(STDERR, "Migration {$version} must return a callable.\n");
-        exit(1);
-    }
-
-    echo "[RUN ] {$version}\n";
-
-    try {
-        $pdo->beginTransaction();
-
-        $migration($pdo);
-
-        recordMigration($pdo, $version);
-
-        $pdo->commit();
-
-        echo "[OK  ] {$version}\n";
-    } catch (Throwable $exception) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-
-        fwrite(STDERR, "[FAIL] {$version}: {$exception->getMessage()}\n");
-        exit(1);
-    }
-}
-
-echo "Migrations completed.\n";
-
-function ensureMigrationsTable(PDO $pdo): void
-{
-    $pdo->exec(
-        <<<SQL
-        CREATE TABLE IF NOT EXISTS schema_migrations (
-            version VARCHAR(255) PRIMARY KEY,
-            executed_at DATETIME NOT NULL
-        )
-        SQL
-    );
-}
-
-function fetchAppliedVersions(PDO $pdo): array
-{
-    $statement = $pdo->query('SELECT version FROM schema_migrations ORDER BY version ASC');
-    $versions = $statement->fetchAll(PDO::FETCH_COLUMN);
-
-    return is_array($versions) ? $versions : [];
-}
-
-function recordMigration(PDO $pdo, string $version): void
-{
-    $statement = $pdo->prepare(
-        'INSERT INTO schema_migrations (version, executed_at) VALUES (:version, :executed_at)'
-    );
-
-    $statement->execute([
-        'version' => $version,
-        'executed_at' => date('Y-m-d H:i:s'),
-    ]);
-}
+fwrite(STDOUT, "Database migrated successfully.\n");

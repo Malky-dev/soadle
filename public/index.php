@@ -2,22 +2,23 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../bootstrap/app.php';
+require_once dirname(__DIR__) . '/bootstrap/app.php';
 
 use App\Http\Router;
 
-// Capture request
-$method = $_SERVER['REQUEST_METHOD'];
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
-// Dispatch
-$response = Router::dispatch($method, $uri);
-
-// Emit response
-http_response_code($response['status']);
-
-foreach ($response['headers'] as $name => $value) {
-    header("$name: $value");
+if (!is_string($uri) || $uri === '') {
+    $uri = '/';
 }
 
-echo $response['body'];
+$response = Router::dispatch($method, $uri);
+
+http_response_code($response['status'] ?? 200);
+
+foreach (($response['headers'] ?? []) as $name => $value) {
+    header(sprintf('%s: %s', $name, $value));
+}
+
+echo $response['body'] ?? '';
