@@ -46,8 +46,17 @@ final class GameController extends AbstractController
             return $this->badRequest();
         }
 
-        $target = $this->repo->findById($targetId);
-        $guess = $this->repo->findById($guessId);
+        // Load the full character list once so the current request can rebuild
+        // the game state without issuing repeated repository reads.
+        $characters = $this->repo->findAll();
+
+        if ($characters === []) {
+            return $this->text('No characters available.', 500);
+        }
+
+        $charactersById = $this->indexCharactersById($characters);
+        $target = $charactersById[$targetId] ?? null;
+        $guess = $charactersById[$guessId] ?? null;
 
         if ($target === null || $guess === null) {
             return $this->badRequest();
@@ -56,6 +65,8 @@ final class GameController extends AbstractController
         if (in_array($guessId, $attemptedIds, true)) {
             return $this->renderCurrentGameState(
                 target: $target,
+                characters: $characters,
+                charactersById: $charactersById,
                 attemptedIds: $attemptedIds,
                 error: 'This character has already been attempted.'
             );
@@ -63,19 +74,28 @@ final class GameController extends AbstractController
 
         $attemptedIds[] = $guessId;
 
-        return $this->renderCurrentGameState($target, $attemptedIds);
+        return $this->renderCurrentGameState(
+            target: $target,
+            characters: $characters,
+            charactersById: $charactersById,
+            attemptedIds: $attemptedIds
+        );
     }
 
     /**
+     * @param list<Character> $characters
+     * @param array<int, Character> $charactersById
      * @param list<int> $attemptedIds
      */
     private function renderCurrentGameState(
         Character $target,
+        array $characters,
+        array $charactersById,
         array $attemptedIds,
         ?string $error = null
     ): array {
-        $attempts = $this->buildAttempts($target, $attemptedIds);
-        $availableCharacters = $this->buildAvailableCharacters($attemptedIds);
+        $attempts = $this->buildAttempts($target, $attemptedIds, $charactersById);
+        $availableCharacters = $this->buildAvailableCharacters($characters, $attemptedIds);
         $isWin = in_array($target->id, $attemptedIds, true);
 
         return $this->renderGame(
@@ -89,6 +109,9 @@ final class GameController extends AbstractController
     }
 
     /**
+     * Rebuild the attempted id list from the hidden form field while filtering
+     * out invalid or duplicated values.
+     *
      * @param list<int> $attemptedIds
      * @return list<int>
      */
@@ -115,18 +138,37 @@ final class GameController extends AbstractController
     }
 
     /**
+     * Build an in-memory lookup table so later steps can resolve characters
+     * by id in constant time without hitting the repository again.
+     *
+     * @param list<Character> $characters
+     * @return array<int, Character>
+     */
+    private function indexCharactersById(array $characters): array
+    {
+        $charactersById = [];
+
+        foreach ($characters as $character) {
+            $charactersById[$character->id] = $character;
+        }
+
+        return $charactersById;
+    }
+
+    /**
      * @param list<int> $attemptedIds
+     * @param array<int, Character> $charactersById
      * @return list<array{
      *     character: Character,
      *     comparison: array<string, string>
      * }>
      */
-    private function buildAttempts(Character $target, array $attemptedIds): array
+    private function buildAttempts(Character $target, array $attemptedIds, array $charactersById): array
     {
         $attempts = [];
 
         foreach ($attemptedIds as $attemptedId) {
-            $character = $this->repo->findById($attemptedId);
+            $character = $charactersById[$attemptedId] ?? null;
 
             if ($character === null) {
                 continue;
@@ -142,12 +184,15 @@ final class GameController extends AbstractController
     }
 
     /**
+     * Filter out already attempted characters from the preloaded list instead
+     * of re-querying the repository for the remaining options.
+     *
+     * @param list<Character> $characters
      * @param list<int> $attemptedIds
      * @return list<Character>
      */
-    private function buildAvailableCharacters(array $attemptedIds): array
+    private function buildAvailableCharacters(array $characters, array $attemptedIds): array
     {
-        $characters = $this->repo->findAll();
         $availableCharacters = [];
 
         foreach ($characters as $character) {
