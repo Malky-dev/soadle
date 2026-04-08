@@ -17,8 +17,6 @@ Thumbs.db
 
 # Logs
 *.log
-logs/
-*.tmp
 
 # PHP
 /vendor/
@@ -31,25 +29,20 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Build outputs
-dist/
-build/
-public/build/
-public/assets/build/
+/public/build/
 
 # Test / coverage
 coverage/
 .phpunit.result.cache
 
-# Cache / runtime
-cache/
-tmp/
-temp/
-*.cache
+# Runtime (standardisé)
+/var/*
+!/var/.gitkeep
 
 # Uploaded or generated files
-uploads/
-storage/
-generated/
+/uploads/
+/storage/
+/generated/
 
 # Database local files
 *.sqlite
