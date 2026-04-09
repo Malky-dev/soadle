@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-$tests = [
-    __DIR__ . '/Application/PlayGameTest.php',
-];
+$coverageEnabled = extension_loaded('xdebug');
+
+if ($coverageEnabled) {
+    xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);
+}
+
+$testFiles = glob(__DIR__ . '/**/*Test.php') ?: [];
+
+sort($testFiles);
 
 $failures = 0;
 
-foreach ($tests as $testFile) {
+foreach ($testFiles as $testFile) {
     $result = require $testFile;
 
     if (!is_array($result)) {
@@ -29,6 +35,14 @@ foreach ($tests as $testFile) {
             $failures++;
         }
     }
+}
+
+if ($coverageEnabled) {
+    $coverage = xdebug_get_code_coverage();
+    xdebug_stop_code_coverage();
+
+    require __DIR__ . '/support/CoverageReporter.php';
+    printCoverageReport($coverage);
 }
 
 if ($failures > 0) {

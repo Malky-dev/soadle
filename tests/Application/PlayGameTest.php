@@ -7,62 +7,6 @@ use App\Application\CompareCharacters;
 use App\Application\PlayGame;
 use App\Domain\Character;
 
-function buildCharacter(
-    int $id,
-    string $name,
-    string $gender = 'male',
-    int $firstAppearanceSeason = 1,
-    ?int $deathSeason = null,
-    string $affiliation = 'SAMCRO',
-    ?string $imagePath = null
-): Character {
-    return new Character(
-        id: $id,
-        name: $name,
-        gender: $gender,
-        firstAppearanceSeason: $firstAppearanceSeason,
-        deathSeason: $deathSeason,
-        affiliation: $affiliation,
-        imagePath: $imagePath
-    );
-}
-
-function assertSame(mixed $expected, mixed $actual): void
-{
-    if ($expected !== $actual) {
-        throw new RuntimeException(sprintf(
-            'Expected %s, got %s.',
-            exportValue($expected),
-            exportValue($actual)
-        ));
-    }
-}
-
-function assertCount(int $expectedCount, array $items): void
-{
-    $actualCount = count($items);
-
-    if ($expectedCount !== $actualCount) {
-        throw new RuntimeException(sprintf(
-            'Expected count %d, got %d.',
-            $expectedCount,
-            $actualCount
-        ));
-    }
-}
-
-function assertTrue(bool $condition, string $message = 'Condition is false.'): void
-{
-    if ($condition !== true) {
-        throw new RuntimeException($message);
-    }
-}
-
-function exportValue(mixed $value): string
-{
-    return var_export($value, true);
-}
-
 final class InMemoryCharacterRepository implements CharacterRepository
 {
     /**
@@ -211,5 +155,59 @@ return [
         assertSame([1], $state['attemptedIds']);
         assertCount(1, $state['attempts']);
         assertCount(1, $state['availableCharacters']);
+    },
+
+    'PlayGame::guess ignores attempted ids that do not exist anymore in the repository' => function (): void {
+        $characters = [
+            buildCharacter(
+                id: 1,
+                name: 'Jax Teller',
+                gender: 'male',
+                firstAppearanceSeason: 1,
+                deathSeason: 7,
+                affiliation: 'SAMCRO'
+            ),
+            buildCharacter(
+                id: 2,
+                name: 'Gemma Teller',
+                gender: 'female',
+                firstAppearanceSeason: 1,
+                deathSeason: 7,
+                affiliation: 'SAMCRO'
+            ),
+            buildCharacter(
+                id: 3,
+                name: 'Clay Morrow',
+                gender: 'male',
+                firstAppearanceSeason: 1,
+                deathSeason: 6,
+                affiliation: 'SAMCRO'
+            ),
+        ];
+
+        $useCase = new PlayGame(new InMemoryCharacterRepository($characters), new CompareCharacters());
+
+        $state = $useCase->guess(1, 2, [999]);
+
+        assertSame(false, $state['badRequest']);
+        assertSame([999, 2], $state['attemptedIds']);
+        assertCount(1, $state['attempts']);
+        assertSame('Gemma Teller', $state['attempts'][0]['character']->name);
+        assertCount(2, $state['availableCharacters']);
+    },
+
+    'PlayGame::guess rejects an unknown guessed character id as bad request' => function (): void {
+        $characters = [
+            buildCharacter(id: 1, name: 'Jax Teller'),
+            buildCharacter(id: 2, name: 'Gemma Teller'),
+        ];
+
+        $useCase = new PlayGame(new InMemoryCharacterRepository($characters), new CompareCharacters());
+
+        $state = $useCase->guess(1, 999, []);
+
+        assertSame(true, $state['badRequest']);
+        assertSame(0, $state['targetId']);
+        assertSame([], $state['attemptedIds']);
     },
 ];
