@@ -44,7 +44,8 @@
 - [x] Add the first guess input flow
 - [x] Add the first result comparison rules
 - [x] Keep the gameplay loop server-rendered and minimal
-- [ ] Extract the current gameplay state handling into a dedicated application use case
+- [x] Extract the current gameplay state handling into a dedicated application use case
+- [x] Move gameplay orchestration out of GameController
 - [ ] Reduce repeated character reads in the gameplay flow
 
 ## Next
