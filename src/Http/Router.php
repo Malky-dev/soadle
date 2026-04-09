@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http;
 
 use App\Application\CompareCharacters;
+use App\Application\PlayGame;
 use App\Http\Controller\CharacterController;
 use App\Http\Controller\GameController;
 use App\Http\Controller\HealthController;
@@ -20,7 +21,7 @@ final class Router
 
         $pdo = Connection::get();
         $repo = new CharacterSqlRepository($pdo);
-        $comparer = new CompareCharacters();
+        $playGame = new PlayGame($repo, new CompareCharacters());
 
         if ($method === 'GET' && $uri === '/health') {
             return (new HealthController())->handle();
@@ -35,11 +36,11 @@ final class Router
         }
 
         if ($method === 'GET' && $uri === '/play') {
-            return (new GameController($repo, $comparer))->play();
+            return (new GameController($playGame))->play();
         }
 
         if ($method === 'POST' && $uri === '/guess') {
-            return (new GameController($repo, $comparer))->guess();
+            return (new GameController($playGame))->guess();
         }
 
         return [
