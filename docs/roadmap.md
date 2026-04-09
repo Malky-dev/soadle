@@ -66,7 +66,8 @@
 - [ ] Add CI checks on `main` and `develop`
 - [ ] Add deployment-oriented environment rules
 - [ ] Add diagnostics and observability improvements
-- [ ] Add automated tests for domain and application layers
+- [x] Add automated tests for the core gameplay application flow
+- [ ] Extend automated tests across domain and application layers
 - [ ] Add integration tests for SQL repositories and critical HTTP flows
 
 ## Maybe
