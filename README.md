@@ -54,6 +54,7 @@ Documentation associée :
 
 - docs/conventions/ → standards de développement
 - docs/adr/ → décisions d’architecture
+- docs/testing.md → stratégie de test et CI
 
 ---
 
@@ -162,7 +163,7 @@ feature/*   → développement
 
 Règle :
 
-> Toute branche doit passer /health avant merge.
+> > Toute branche doit passer les vérifications CI (Tests + Health) avant merge.
 
 ---
 

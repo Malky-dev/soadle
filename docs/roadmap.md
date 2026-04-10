@@ -21,7 +21,7 @@
 - [x] Ensure the local `.env` matches the migration setup
 - [x] Verify the same database target is used by migrations and `/health`
 - [x] Confirm the local reset + migrate flow works end-to-end
-- [ ] Update the README with the current local workflow
+- [x] Update the README with the current local workflow
 - [ ] Remove duplicate or misleading local database artifacts
 
 ### 3. Introduce the first real domain slice
@@ -44,31 +44,65 @@
 - [x] Add the first guess input flow
 - [x] Add the first result comparison rules
 - [x] Keep the gameplay loop server-rendered and minimal
-- [x] Extract the current gameplay state handling into a dedicated application use case
+- [x] Extract gameplay state handling into a dedicated application use case
 - [x] Move gameplay orchestration out of GameController
 - [ ] Reduce repeated character reads in the gameplay flow
 
+### 6. Testing and quality (NEW)
+- [x] Add custom test runner
+- [x] Add business-focused tests for Application layer
+- [x] Add domain-level tests
+- [x] Introduce lightweight coverage with Xdebug
+- [x] Ensure test discovery and execution consistency
+- [x] Add regression coverage for gameplay flows
+
+### 7. CI and runtime validation (NEW)
+- [x] Add GitHub Actions CI pipeline
+- [x] Run test suite in CI
+- [x] Add health check job in CI
+- [x] Align migration script with PHP migrations
+- [x] Ensure CI environment boot matches local setup
+- [x] Add branch protection rules (Tests + Health)
+
+---
+
 ## Next
 
-- [ ] Add the core guessing use case
-- [ ] Keep the HTTP layer thin by moving gameplay orchestration out of `GameController`
-- [ ] Add answer submission hardening and invalid input handling
-- [ ] Add basic error pages
-- [ ] Add a local seed loading command
-- [ ] Keep SQL explicit and focused
+### Gameplay and performance
 - [ ] Reduce the number of database queries per gameplay request
-- [ ] Remove dead configuration or dead infrastructure code
-- [ ] Document the current architecture decisions in the README
+- [ ] Optimize character retrieval during gameplay
+- [ ] Add answer submission hardening and invalid input handling
+
+### DX and maintainability
+- [ ] Add a local seed loading command
+- [ ] Remove dead configuration or unused infrastructure code
+- [ ] Improve developer feedback on runtime errors
+
+### Documentation
+- [x] Add testing documentation
+- [ ] Improve README architecture section clarity
+- [ ] Document key architecture decisions more explicitly
+
+---
 
 ## Later
 
+### Testing evolution
+- [ ] Extend automated tests across new use cases
+- [ ] Add integration tests for SQL repositories
+- [ ] Add integration tests for critical HTTP flows
+
+### CI evolution
+- [ ] Add lint step in CI
+- [ ] Add optional coverage reporting
+- [ ] Improve CI feedback and logs readability
+
+### Product features
 - [ ] Add admin CRUD for game data
-- [ ] Add CI checks on `main` and `develop`
 - [ ] Add deployment-oriented environment rules
 - [ ] Add diagnostics and observability improvements
-- [x] Add automated tests for the core gameplay application flow
-- [ ] Extend automated tests across domain and application layers
-- [ ] Add integration tests for SQL repositories and critical HTTP flows
+
+---
 
 ## Maybe
 
