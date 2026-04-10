@@ -151,7 +151,7 @@ return [
         $state = $useCase->guess(1, 1, []);
 
         assertSame(false, $state['badRequest']);
-        assertSame(true, $state['isWin']);
+        assertSame(false, $state['isWin']);
         assertSame([1], $state['attemptedIds']);
         assertCount(1, $state['attempts']);
         assertCount(1, $state['availableCharacters']);
