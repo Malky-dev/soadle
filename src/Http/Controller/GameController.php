@@ -26,21 +26,43 @@ final class GameController extends AbstractController
 
     public function guess(): array
     {
-        $targetId = (int) ($_POST['target_id'] ?? 0);
-        $guessId = (int) ($_POST['guess_id'] ?? 0);
+        $targetId = $this->parseRequiredPositiveInteger($_POST['target_id'] ?? null);
+        $guessId = $this->parseRequiredPositiveInteger($_POST['guess_id'] ?? null);
+    
+        if ($targetId === null || $guessId === null) {
+            return $this->badRequest();
+        }
+    
         $attemptedIds = $this->parseAttemptedIds((string) ($_POST['attempted_ids'] ?? ''));
-
+    
         $state = $this->playGame->guess($targetId, $guessId, $attemptedIds);
-
+    
         if ($state['badRequest'] === true) {
             return $this->badRequest();
         }
-
+    
         if ($state['targetId'] === 0) {
             return $this->text('No characters available.', 500);
         }
-
+    
         return $this->renderGame($state);
+    }
+
+    private function parseRequiredPositiveInteger(mixed $raw): ?int
+    {
+        if (!is_string($raw) && !is_int($raw)) {
+            return null;
+        }
+
+        $value = trim((string) $raw);
+
+        if ($value === '' || !ctype_digit($value)) {
+            return null;
+        }
+
+        $id = (int) $value;
+
+        return $id > 0 ? $id : null;
     }
 
     /**
@@ -54,20 +76,26 @@ final class GameController extends AbstractController
         if ($raw === '') {
             return [];
         }
-
+    
         $parts = explode(',', $raw);
         $attemptedIds = [];
-
+    
         foreach ($parts as $part) {
-            $id = (int) trim($part);
-
+            $rawId = trim($part);
+    
+            if ($rawId === '' || !ctype_digit($rawId)) {
+                continue;
+            }
+    
+            $id = (int) $rawId;
+    
             if ($id <= 0 || in_array($id, $attemptedIds, true)) {
                 continue;
             }
-
+    
             $attemptedIds[] = $id;
         }
-
+    
         return $attemptedIds;
     }
 
