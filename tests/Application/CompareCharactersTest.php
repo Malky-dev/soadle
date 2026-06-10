@@ -133,4 +133,15 @@ return [
 
         assertSame('lower', $result['death_season']);
     },
+
+    'CompareCharacters::execute returns different when nullable guess is null' => function (): void {
+        $comparer = new CompareCharacters();
+
+        $target = buildCharacter(id: 1, name: 'Target', deathSeason: 6);
+        $guess = buildCharacter(id: 2, name: 'Guess', deathSeason: null);
+
+        $result = $comparer->execute($target, $guess);
+
+        assertSame('different', $result['death_season']);
+    },
 ];
