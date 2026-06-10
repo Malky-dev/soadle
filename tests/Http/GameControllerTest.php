@@ -112,4 +112,31 @@ return [
 
         $_POST = [];
     },
+
+    'GameController::guess displays duplicate attempt error feedback' => function (): void {
+        $_POST = [
+            'target_id' => '1',
+            'guess_id' => '2',
+            'attempted_ids' => '2',
+        ];
+
+        $controller = buildGameController([
+            buildCharacter(id: 1, name: 'Jax Teller'),
+            buildCharacter(id: 2, name: 'Clay Morrow'),
+        ]);
+
+        $response = $controller->guess();
+
+        assertSame(200, $response['status']);
+        assertTrue(
+            str_contains($response['body'], 'role="alert"'),
+            'Expected error feedback to be exposed as an alert.'
+        );
+        assertTrue(
+            str_contains($response['body'], 'This character has already been attempted.'),
+            'Expected duplicate attempt error to be displayed.'
+        );
+
+        $_POST = [];
+    },
 ];
