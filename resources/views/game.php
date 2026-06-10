@@ -13,7 +13,9 @@
         <p><a href="/">Retour au menu</a></p>
     <?php else: ?>
         <?php if ($error !== null): ?>
-            <p><strong><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></strong></p>
+            <p role="alert">
+                <strong><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></strong>
+            </p>
         <?php endif; ?>
 
         <?php if ($availableCharacters !== []): ?>
