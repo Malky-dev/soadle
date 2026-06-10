@@ -210,4 +210,20 @@ return [
         assertSame(0, $state['targetId']);
         assertSame([], $state['attemptedIds']);
     },
+
+    'PlayGame::guess rejects an unknown target id as bad request' => function (): void {
+        $characters = [
+            buildCharacter(id: 1, name: 'Jax Teller'),
+            buildCharacter(id: 2, name: 'Gemma Teller'),
+        ];
+
+        $useCase = new PlayGame(new InMemoryCharacterRepository($characters), new CompareCharacters());
+
+        $state = $useCase->guess(999, 1, []);
+
+        assertSame(true, $state['badRequest']);
+        assertSame(0, $state['targetId']);
+        assertSame([], $state['attemptedIds']);
+    },
+
 ];
