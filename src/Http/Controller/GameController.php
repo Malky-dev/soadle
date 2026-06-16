@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controller;
 
 use App\Application\PlayGame;
+use App\Domain\Character;
+use App\Http\ViewModel\GameViewModelFactory;
 
 final class GameController extends AbstractController
 {
     public function __construct(
-        private PlayGame $playGame
+        private PlayGame $playGame,
+        private GameViewModelFactory $viewModelFactory
     ) {
     }
 
@@ -104,23 +107,110 @@ final class GameController extends AbstractController
      *     targetId: int,
      *     attemptedIds: list<int>,
      *     attempts: list<array{
-     *         character: \App\Domain\Character,
+     *         character: Character,
      *         comparison: array<string, string>
      *     }>,
-     *     availableCharacters: list<\App\Domain\Character>,
+     *     availableCharacters: list<Character>,
      *     isWin: bool,
      *     error: ?string
      * } $state
      */
     private function renderGame(array $state): array
     {
-        return $this->render('game', [
+        return $this->render('game', $this->viewModelFactory->fromState($state));
+    }
+
+    /**
+     * @param array{
+     *     targetId: int,
+     *     attemptedIds: list<int>,
+     *     attempts: list<array{
+     *         character: Character,
+     *         comparison: array<string, string>
+     *     }>,
+     *     availableCharacters: list<Character>,
+     *     isWin: bool,
+     *     error: ?string
+     * } $state
+     * @return array{
+     *     targetId: int,
+     *     attemptedIdsValue: string,
+     *     attempts: list<array{
+     *         characterName: string,
+     *         gender: string,
+     *         firstAppearanceSeason: string,
+     *         deathSeason: string,
+     *         affiliation: string
+     *     }>,
+     *     availableCharacters: list<array{
+     *         id: int,
+     *         name: string,
+     *         normalizedName: string
+     *     }>,
+     *     isWin: bool,
+     *     error: ?string
+     * }
+     */
+    private function buildGameViewModel(array $state): array
+    {
+        return [
             'targetId' => $state['targetId'],
             'attemptedIdsValue' => implode(',', $state['attemptedIds']),
-            'attempts' => $state['attempts'],
-            'availableCharacters' => $state['availableCharacters'],
+            'attempts' => $this->buildAttemptRows($state['attempts']),
+            'availableCharacters' => $this->buildAvailableCharacterOptions($state['availableCharacters']),
             'isWin' => $state['isWin'],
             'error' => $state['error'],
-        ]);
+        ];
+    }
+
+    /**
+     * Prepare previous attempts for display so the view does not depend on domain objects.
+     *
+     * @param list<array{
+     *     character: Character,
+     *     comparison: array<string, string>
+     * }> $attempts
+     * @return list<array{
+     *     characterName: string,
+     *     gender: string,
+     *     firstAppearanceSeason: string,
+     *     deathSeason: string,
+     *     affiliation: string
+     * }>
+     */
+    private function buildAttemptRows(array $attempts): array
+    {
+        return array_map(
+            static fn (array $attempt): array => [
+                'characterName' => $attempt['character']->name,
+                'gender' => $attempt['comparison']['gender'],
+                'firstAppearanceSeason' => $attempt['comparison']['first_appearance_season'],
+                'deathSeason' => $attempt['comparison']['death_season'],
+                'affiliation' => $attempt['comparison']['affiliation'],
+            ],
+            $attempts
+        );
+    }
+
+    /**
+     * Build the lightweight character data required by the search UI.
+     *
+     * @param list<Character> $characters
+     * @return list<array{
+     *     id: int,
+     *     name: string,
+     *     normalizedName: string
+     * }>
+     */
+    private function buildAvailableCharacterOptions(array $characters): array
+    {
+        return array_map(
+            static fn (Character $character): array => [
+                'id' => $character->id,
+                'name' => $character->name,
+                'normalizedName' => mb_strtolower($character->name, 'UTF-8'),
+            ],
+            $characters
+        );
     }
 }

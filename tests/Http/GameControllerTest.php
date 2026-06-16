@@ -7,6 +7,7 @@ use App\Application\CompareCharacters;
 use App\Application\PlayGame;
 use App\Domain\Character;
 use App\Http\Controller\GameController;
+use App\Http\ViewModel\GameViewModelFactory;
 
 final class GameControllerTestCharacterRepository implements CharacterRepository
 {
@@ -44,8 +45,9 @@ function buildGameController(array $characters): GameController
         new PlayGame(
             new GameControllerTestCharacterRepository($characters),
             new CompareCharacters()
-        )
-    );
+        ),
+        new GameViewModelFactory()
+    );  
 }
 
 return [
@@ -105,8 +107,14 @@ return [
         $response = $controller->guess();
 
         assertSame(200, $response['status']);
+
         assertTrue(
-            str_contains($response['body'], 'name="attempted_ids" value="2,3"'),
+            str_contains($response['body'], 'name="attempted_ids"'),
+            'Expected attempted ids hidden field to be rendered.'
+        );
+
+        assertTrue(
+            str_contains($response['body'], 'value="2,3"'),
             'Expected malformed attempted ids to be ignored.'
         );
 

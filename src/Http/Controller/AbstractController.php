@@ -22,6 +22,8 @@ abstract class AbstractController
             return $this->text('View not found: ' . $view, 500);
         }
 
+        require_once BASE_PATH . '/src/Http/View/helpers.php';
+
         extract($data, EXTR_SKIP);
 
         ob_start();
