@@ -23,16 +23,39 @@
                 <input type="hidden" name="target_id" value="<?= $targetId ?>">
                 <input type="hidden" name="attempted_ids" value="<?= htmlspecialchars($attemptedIdsValue, ENT_QUOTES, 'UTF-8') ?>">
 
-                <label for="guess_id">Choisir un personnage</label>
-                <select id="guess_id" name="guess_id" required>
-                    <?php foreach ($availableCharacters as $character): ?>
-                        <option value="<?= $character->id ?>">
-                            <?= htmlspecialchars($character->name, ENT_QUOTES, 'UTF-8') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="character_search">Rechercher un personnage</label>
+                <input
+                    type="text"
+                    id="character_search"
+                    autocomplete="off"
+                    placeholder="Tape un nom..."
+                    aria-describedby="character_search_help"
+                >
 
-                <button type="submit">Guess</button>
+                <input type="hidden" id="guess_id" name="guess_id" required>
+
+                <p id="character_search_help">
+                    Tape au moins une lettre puis sélectionne un personnage.
+                </p>
+
+                <div id="character_search_results" class="search-results">
+                    <?php foreach ($availableCharacters as $character): ?>
+                        <div
+                            class="search-result"
+                            data-character-id="<?= $character->id ?>"
+                            data-character-name="<?= htmlspecialchars(mb_strtolower($character->name, 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                            hidden
+                        >
+                            <?= htmlspecialchars($character->name, ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <p id="character_search_empty" hidden>
+                    Aucun personnage ne correspond à cette recherche.
+                </p>
+
+                <button type="submit" hidden>Guess</button>
             </form>
         <?php else: ?>
             <p>Plus aucun personnage disponible.</p>
@@ -72,5 +95,7 @@
     <?php endif; ?>
 
     <p><a href="/">Retour au menu</a></p>
+    <link rel="stylesheet" href="/assets/css/game.css">
+    <script src="/assets/js/game.js" defer></script>
 </body>
 </html>
