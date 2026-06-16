@@ -131,30 +131,25 @@ $escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOT
 
             <tbody>
                 <?php foreach ($attempts as $attempt): ?>
-                    <?php
-                    // Comparison values are computed by the application layer.
-                    $comparison = $attempt['comparison'];
-                    ?>
-
                     <tr>
                         <td>
-                            <?= $escape($attempt['character']->name) ?>
+                            <?= $escape($attempt['characterName']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($comparison['gender']) ?>
+                            <?= $escape($attempt['gender']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($comparison['first_appearance_season']) ?>
+                            <?= $escape($attempt['firstAppearanceSeason']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($comparison['death_season']) ?>
+                            <?= $escape($attempt['deathSeason']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($comparison['affiliation']) ?>
+                            <?= $escape($attempt['affiliation']) ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

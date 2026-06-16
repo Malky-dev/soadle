@@ -115,14 +115,79 @@ final class GameController extends AbstractController
      */
     private function renderGame(array $state): array
     {
-        return $this->render('game', [
+        return $this->render('game', $this->buildGameViewModel($state));
+    }
+
+    /**
+     * @param array{
+     *     targetId: int,
+     *     attemptedIds: list<int>,
+     *     attempts: list<array{
+     *         character: Character,
+     *         comparison: array<string, string>
+     *     }>,
+     *     availableCharacters: list<Character>,
+     *     isWin: bool,
+     *     error: ?string
+     * } $state
+     * @return array{
+     *     targetId: int,
+     *     attemptedIdsValue: string,
+     *     attempts: list<array{
+     *         characterName: string,
+     *         gender: string,
+     *         firstAppearanceSeason: string,
+     *         deathSeason: string,
+     *         affiliation: string
+     *     }>,
+     *     availableCharacters: list<array{
+     *         id: int,
+     *         name: string,
+     *         normalizedName: string
+     *     }>,
+     *     isWin: bool,
+     *     error: ?string
+     * }
+     */
+    private function buildGameViewModel(array $state): array
+    {
+        return [
             'targetId' => $state['targetId'],
             'attemptedIdsValue' => implode(',', $state['attemptedIds']),
-            'attempts' => $state['attempts'],
+            'attempts' => $this->buildAttemptRows($state['attempts']),
             'availableCharacters' => $this->buildAvailableCharacterOptions($state['availableCharacters']),
             'isWin' => $state['isWin'],
             'error' => $state['error'],
-        ]);
+        ];
+    }
+
+    /**
+     * Prepare previous attempts for display so the view does not depend on domain objects.
+     *
+     * @param list<array{
+     *     character: Character,
+     *     comparison: array<string, string>
+     * }> $attempts
+     * @return list<array{
+     *     characterName: string,
+     *     gender: string,
+     *     firstAppearanceSeason: string,
+     *     deathSeason: string,
+     *     affiliation: string
+     * }>
+     */
+    private function buildAttemptRows(array $attempts): array
+    {
+        return array_map(
+            static fn (array $attempt): array => [
+                'characterName' => $attempt['character']->name,
+                'gender' => $attempt['comparison']['gender'],
+                'firstAppearanceSeason' => $attempt['comparison']['first_appearance_season'],
+                'deathSeason' => $attempt['comparison']['death_season'],
+                'affiliation' => $attempt['comparison']['affiliation'],
+            ],
+            $attempts
+        );
     }
 
     /**
