@@ -1,10 +1,3 @@
-<?php
-
-declare(strict_types=1);
-
-$escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -30,7 +23,7 @@ $escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOT
 
         <?php if ($error !== null): ?>
             <p role="alert">
-                <strong><?= $escape($error) ?></strong>
+                <strong><?= e($error) ?></strong>
             </p>
         <?php endif; ?>
 
@@ -46,7 +39,7 @@ $escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOT
                 <input
                     type="hidden"
                     name="attempted_ids"
-                    value="<?= $escape($attemptedIdsValue) ?>"
+                    value="<?= e($attemptedIdsValue) ?>"
                 >
 
                 <label for="character_search">
@@ -82,10 +75,10 @@ $escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOT
                         <div
                             class="search-result"
                             data-character-id="<?= $character['id'] ?>"
-                            data-character-name="<?= $escape($character['normalizedName']) ?>"
+                            data-character-name="<?= e($character['normalizedName']) ?>"
                             hidden
                         >
-                            <?= $escape($character['name']) ?>
+                            <?= e($character['name']) ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -133,23 +126,23 @@ $escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOT
                 <?php foreach ($attempts as $attempt): ?>
                     <tr>
                         <td>
-                            <?= $escape($attempt['characterName']) ?>
+                            <?= e($attempt['characterName']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($attempt['gender']) ?>
+                            <?= e($attempt['gender']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($attempt['firstAppearanceSeason']) ?>
+                            <?= e($attempt['firstAppearanceSeason']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($attempt['deathSeason']) ?>
+                            <?= e($attempt['deathSeason']) ?>
                         </td>
 
                         <td>
-                            <?= $escape($attempt['affiliation']) ?>
+                            <?= e($attempt['affiliation']) ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
