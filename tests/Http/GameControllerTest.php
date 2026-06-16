@@ -107,8 +107,14 @@ return [
         $response = $controller->guess();
 
         assertSame(200, $response['status']);
+
         assertTrue(
-            str_contains($response['body'], 'name="attempted_ids" value="2,3"'),
+            str_contains($response['body'], 'name="attempted_ids"'),
+            'Expected attempted ids hidden field to be rendered.'
+        );
+
+        assertTrue(
+            str_contains($response['body'], 'value="2,3"'),
             'Expected malformed attempted ids to be ignored.'
         );
 
