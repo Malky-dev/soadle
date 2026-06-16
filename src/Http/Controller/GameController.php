@@ -6,11 +6,13 @@ namespace App\Http\Controller;
 
 use App\Application\PlayGame;
 use App\Domain\Character;
+use App\Http\ViewModel\GameViewModelFactory;
 
 final class GameController extends AbstractController
 {
     public function __construct(
-        private PlayGame $playGame
+        private PlayGame $playGame,
+        private GameViewModelFactory $viewModelFactory
     ) {
     }
 
@@ -115,7 +117,7 @@ final class GameController extends AbstractController
      */
     private function renderGame(array $state): array
     {
-        return $this->render('game', $this->buildGameViewModel($state));
+        return $this->render('game', $this->viewModelFactory->fromState($state));
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Http\Controller\HealthController;
 use App\Http\Controller\HomeController;
 use App\Infrastructure\CharacterSqlRepository;
 use App\Infrastructure\Database\Connection;
+use App\Http\ViewModel\GameViewModelFactory;
 
 final class Router
 {
@@ -22,6 +23,7 @@ final class Router
         $pdo = Connection::get();
         $repo = new CharacterSqlRepository($pdo);
         $playGame = new PlayGame($repo, new CompareCharacters());
+        $gameViewModelFactory = new GameViewModelFactory();
 
         if ($method === 'GET' && $uri === '/health') {
             return (new HealthController())->handle();
@@ -36,11 +38,11 @@ final class Router
         }
 
         if ($method === 'GET' && $uri === '/play') {
-            return (new GameController($playGame))->play();
+            return (new GameController($playGame, $gameViewModelFactory))->play();
         }
-
+        
         if ($method === 'POST' && $uri === '/guess') {
-            return (new GameController($playGame))->guess();
+            return (new GameController($playGame, $gameViewModelFactory))->guess();
         }
 
         return [
