@@ -1,29 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+$escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Soadle - Partie</title>
+
+    <link rel="stylesheet" href="/assets/css/game.css">
 </head>
 <body>
     <h1>Devine le personnage</h1>
 
     <?php if ($isWin): ?>
         <p><strong>Bravo, tu as trouvé le personnage mystère.</strong></p>
-        <p><a href="/play">Nouvelle partie</a></p>
-        <p><a href="/">Retour au menu</a></p>
+
+        <p>
+            <a href="/play">Nouvelle partie</a>
+        </p>
+
+        <p>
+            <a href="/">Retour au menu</a>
+        </p>
     <?php else: ?>
+
         <?php if ($error !== null): ?>
             <p role="alert">
-                <strong><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></strong>
+                <strong><?= $escape($error) ?></strong>
             </p>
         <?php endif; ?>
 
         <?php if ($availableCharacters !== []): ?>
             <form method="POST" action="/guess">
-                <input type="hidden" name="target_id" value="<?= $targetId ?>">
-                <input type="hidden" name="attempted_ids" value="<?= htmlspecialchars($attemptedIdsValue, ENT_QUOTES, 'UTF-8') ?>">
+                <!-- Game state preserved between guesses. -->
+                <input
+                    type="hidden"
+                    name="target_id"
+                    value="<?= $targetId ?>"
+                >
 
-                <label for="character_search">Rechercher un personnage</label>
+                <input
+                    type="hidden"
+                    name="attempted_ids"
+                    value="<?= $escape($attemptedIdsValue) ?>"
+                >
+
+                <label for="character_search">
+                    Rechercher un personnage
+                </label>
+
                 <input
                     type="text"
                     id="character_search"
@@ -32,35 +61,58 @@
                     aria-describedby="character_search_help"
                 >
 
-                <input type="hidden" id="guess_id" name="guess_id" required>
+                <!-- Submitted value expected by the server. -->
+                <input
+                    type="hidden"
+                    id="guess_id"
+                    name="guess_id"
+                    required
+                >
 
                 <p id="character_search_help">
                     Tape au moins une lettre puis sélectionne un personnage.
                 </p>
 
-                <div id="character_search_results" class="search-results">
+                <!-- Pre-rendered search results filtered client-side. -->
+                <div
+                    id="character_search_results"
+                    class="search-results"
+                >
                     <?php foreach ($availableCharacters as $character): ?>
                         <div
                             class="search-result"
-                            data-character-id="<?= $character->id ?>"
-                            data-character-name="<?= htmlspecialchars(mb_strtolower($character->name, 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                            data-character-id="<?= $character['id'] ?>"
+                            data-character-name="<?= $escape($character['normalizedName']) ?>"
                             hidden
                         >
-                            <?= htmlspecialchars($character->name, ENT_QUOTES, 'UTF-8') ?>
+                            <?= $escape($character['name']) ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
 
-                <p id="character_search_empty" hidden>
+                <p
+                    id="character_search_empty"
+                    hidden
+                >
                     Aucun personnage ne correspond à cette recherche.
                 </p>
 
-                <button type="submit" hidden>Guess</button>
+                <!-- Form submission is triggered through JavaScript. -->
+                <button
+                    type="submit"
+                    hidden
+                >
+                    Guess
+                </button>
             </form>
         <?php else: ?>
             <p>Plus aucun personnage disponible.</p>
-            <p><a href="/play">Nouvelle partie</a></p>
+
+            <p>
+                <a href="/play">Nouvelle partie</a>
+            </p>
         <?php endif; ?>
+
     <?php endif; ?>
 
     <?php if ($attempts !== []): ?>
@@ -76,26 +128,44 @@
                     <th>Affiliation</th>
                 </tr>
             </thead>
+
             <tbody>
                 <?php foreach ($attempts as $attempt): ?>
                     <?php
-                    // Each attempt carries the comparison payload computed by GameController.
+                    // Comparison values are computed by the application layer.
                     $comparison = $attempt['comparison'];
                     ?>
+
                     <tr>
-                        <td><?= htmlspecialchars($attempt['character']->name, ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($comparison['gender'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($comparison['first_appearance_season'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($comparison['death_season'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($comparison['affiliation'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td>
+                            <?= $escape($attempt['character']->name) ?>
+                        </td>
+
+                        <td>
+                            <?= $escape($comparison['gender']) ?>
+                        </td>
+
+                        <td>
+                            <?= $escape($comparison['first_appearance_season']) ?>
+                        </td>
+
+                        <td>
+                            <?= $escape($comparison['death_season']) ?>
+                        </td>
+
+                        <td>
+                            <?= $escape($comparison['affiliation']) ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     <?php endif; ?>
 
-    <p><a href="/">Retour au menu</a></p>
-    <link rel="stylesheet" href="/assets/css/game.css">
+    <p>
+        <a href="/">Retour au menu</a>
+    </p>
+
     <script src="/assets/js/game.js" defer></script>
 </body>
 </html>

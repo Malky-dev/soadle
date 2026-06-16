@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controller;
 
 use App\Application\PlayGame;
+use App\Domain\Character;
 
 final class GameController extends AbstractController
 {
@@ -104,10 +105,10 @@ final class GameController extends AbstractController
      *     targetId: int,
      *     attemptedIds: list<int>,
      *     attempts: list<array{
-     *         character: \App\Domain\Character,
+     *         character: Character,
      *         comparison: array<string, string>
      *     }>,
-     *     availableCharacters: list<\App\Domain\Character>,
+     *     availableCharacters: list<Character>,
      *     isWin: bool,
      *     error: ?string
      * } $state
@@ -118,9 +119,31 @@ final class GameController extends AbstractController
             'targetId' => $state['targetId'],
             'attemptedIdsValue' => implode(',', $state['attemptedIds']),
             'attempts' => $state['attempts'],
-            'availableCharacters' => $state['availableCharacters'],
+            'availableCharacters' => $this->buildAvailableCharacterOptions($state['availableCharacters']),
             'isWin' => $state['isWin'],
             'error' => $state['error'],
         ]);
+    }
+
+    /**
+     * Build the lightweight character data required by the search UI.
+     *
+     * @param list<Character> $characters
+     * @return list<array{
+     *     id: int,
+     *     name: string,
+     *     normalizedName: string
+     * }>
+     */
+    private function buildAvailableCharacterOptions(array $characters): array
+    {
+        return array_map(
+            static fn (Character $character): array => [
+                'id' => $character->id,
+                'name' => $character->name,
+                'normalizedName' => mb_strtolower($character->name, 'UTF-8'),
+            ],
+            $characters
+        );
     }
 }
